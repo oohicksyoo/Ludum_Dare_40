@@ -5,6 +5,7 @@ using Project.Utility;
 using System;
 using Project.InputControls;
 using Project.Manager;
+using Project.Turkey;
 
 namespace Project.Terrain {
     public class World : Singleton<World> {
@@ -15,6 +16,16 @@ namespace Project.Terrain {
         [SerializeField]
         private GameObject tilePrefab;
 
+        [Header("Turkey")]
+        [SerializeField]
+        private GameObject turkeyPrefab;
+        [SerializeField]
+        private float startTurkeyAmount = 2;
+        [SerializeField]
+        private Vector2Int spawnTurkeyLocation = new Vector2Int();
+        [SerializeField]
+        private Transform turkeyParent;
+
         [Header("World Information")]
         [SerializeField]
         private int width = 10;
@@ -22,14 +33,20 @@ namespace Project.Terrain {
         private int height = 10;
 
         private List<Tile> gameTiles;
+        private List<TurkeyManager> turkeys;
+        private Rect bounds;
 
 		public void Start () {
             GameInput.Instance.OnTool += onToolEvent;
             GameInput.Instance.OnInteract += onInteractEvent;
 
+            bounds = new Rect(1, 1, width - 1, height - 1);
+
             gameTiles = new List<Tile>();
+            turkeys = new List<TurkeyManager>();
             generateWorld();
-		}
+            spawnStartTurkeys();
+		}        
 
         #region Events
         private void onToolEvent() {
@@ -63,6 +80,13 @@ namespace Project.Terrain {
 
             return closest;
         }
+
+        public bool IsInBounds(Vector3 Position) {
+            if(bounds.Contains(Position)) {
+                return true;
+            }
+            return false;
+        }
         #endregion
 
         private void generateWorld() {
@@ -74,7 +98,26 @@ namespace Project.Terrain {
                 GameObject temp = Instantiate(tilePrefab, tileHolder);
                 temp.name = string.Format("[ {0},{1} ]", x, y);
                 Tile t = temp.GetComponent<Tile>();
-                t.SetType(TileType.Grass);
+
+                if(x == 0 && y == 0) {
+                    t.SetType(TileType.Fence_Corner_Top_Left);
+                } else if(x == width - 1 && y == 0) {
+                    t.SetType(TileType.Fence_Corner_Top_Right);
+                } else if(x == 0 && y == height - 1) {
+                    t.SetType(TileType.Fence_Corner_Bottom_Left);
+                } else if(x == width - 1 && y == height - 1) {
+                    t.SetType(TileType.Fence_Corner_Bottom_Right);
+                } else if(y == 0 || y == width - 1) {
+                    t.SetType(TileType.Fence_Horizontal);
+                } else if(x == 0 || x == height - 1) {
+                    t.SetType(TileType.Fence_Vertical);
+                } else {
+                    t.SetType(TileType.Grass);
+                }
+
+                
+
+                
                 t.SetPosition(new Vector2Int(x, y));
 
                 gameTiles.Add(t);
@@ -86,5 +129,15 @@ namespace Project.Terrain {
                 }
             }
         }
+
+        private void spawnStartTurkeys() {
+            for (int i = 0; i < startTurkeyAmount; i++) {
+                GameObject temp = Instantiate(turkeyPrefab, turkeyParent);
+                temp.transform.position = new Vector3(spawnTurkeyLocation.x, spawnTurkeyLocation.y, 0);
+                TurkeyManager tm = temp.GetComponent<TurkeyManager>();
+                turkeys.Add(tm);
+            }
+        }
+
     }
 }

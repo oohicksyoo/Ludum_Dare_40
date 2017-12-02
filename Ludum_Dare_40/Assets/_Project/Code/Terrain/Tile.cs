@@ -8,7 +8,13 @@ namespace Project.Terrain {
     public enum TileType {
         Grass = 0,
         FarmLand,
-        Water
+        Water,
+        Fence_Vertical,
+        Fence_Horizontal,
+        Fence_Corner_Top_Left,
+        Fence_Corner_Top_Right,
+        Fence_Corner_Bottom_Left,
+        Fence_Corner_Bottom_Right
     }
 
     public class Tile : MonoBehaviour {
@@ -39,6 +45,7 @@ namespace Project.Terrain {
 
     [Serializable]
     public class TileSetup {
+        public string TileName;
         public TileType Type;
         public Sprite Sprite;
     }

@@ -1,4 +1,5 @@
-﻿using Project.Terrain;
+﻿using Project.Game;
+using Project.Terrain;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -11,7 +12,8 @@ namespace Project.Turkey {
         Hungry,
         Eating,
         Drinking,
-        Mating
+        Mating,
+        Angry
     }
 
     public class TurkeyManager : MonoBehaviour {
@@ -31,6 +33,7 @@ namespace Project.Turkey {
 
         //Hunger
         private float hungerCounter;
+        private Plant plant;
 
         private void Start() {
             stats = new TurkeyStats();
@@ -55,27 +58,30 @@ namespace Project.Turkey {
                     hungryState();
                     break;
                 case TurkeyState.Eating:
+                    eatingState();
                     break;
                 case TurkeyState.Drinking:
                     break;
                 case TurkeyState.Mating:
                     break;
+                case TurkeyState.Angry:
+                    break;
             }
-        }
-
-        
+        }        
 
         private void checkStats() {
-            if(stats.Hunger < 50) {
+            if(stats.Hunger < 50 && state != TurkeyState.Hungry && state != TurkeyState.Eating && state != TurkeyState.Angry) {
                 state = TurkeyState.Hungry;
+                isSearching = true;
             }
         }
 
         private void updateHunger() {
             hungerCounter += Time.deltaTime;
-            if(hungerCounter >= 2) {
+            if(hungerCounter >= 1f/*5*/) {
                 float rand = UnityEngine.Random.Range(0, 3);
                 stats.SetHunger(stats.Hunger - rand);
+                hungerCounter = 0;
             }
         }
 
@@ -124,8 +130,35 @@ namespace Project.Turkey {
         }
 
         private void hungryState() {
-            //TODO: Find some food
-            //TODO: Then switch to eating state
+            //Find some food
+            //Then switch to eating state
+            if(isSearching) {
+                plant = World.Instance.ClosestPlantToMe(transform.position);
+
+                if(plant == null) {
+                    state = TurkeyState.Angry;
+                    Debug.Log("Turkey is Mad; time to go crazy!");
+                } 
+
+                isSearching = false;
+            } else {
+                //Go to the food source
+                goalPosition = plant.GetPosition();
+                float dis = goalPosition.x - transform.position.x;
+                transform.GetComponent<SpriteRenderer>().flipX = (dis > 0) ? true : false;            
+            
+
+                Vector3 direction = goalPosition - transform.position;
+                transform.position += direction.normalized * SPEED * Time.deltaTime;
+
+                if(Vector3.Distance(goalPosition, transform.position) <= 0.25f) {
+                    state = TurkeyState.Eating;
+                }
+            }            
+        }
+
+        private void eatingState() {
+            throw new NotImplementedException();
         }
         #endregion
 

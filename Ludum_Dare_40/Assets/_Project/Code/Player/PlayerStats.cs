@@ -36,13 +36,13 @@ namespace Project.Player {
             health = Value;
             health = Mathf.Clamp(health, 0 , 100);
 
-            //TODO: Determine how many hearts should show
-            //TODO: What sub heart should show on the last one
+            //Determine how many hearts should show
+            //What sub heart should show on the last one
 
             int heartsShowing = (int)(health / amountPerHeart);
             float remainder = (health - (heartsShowing * amountPerHeart));
             int pieces = (int)(remainder / amountPerPiece);
-            Debug.Log(string.Format("Hearts Showing: {0} | {1} | {2}", heartsShowing, remainder, pieces));
+            //Debug.Log(string.Format("Hearts Showing: {0} | {1} | {2}", heartsShowing, remainder, pieces));
             
             for (int i = 0; i < heartsShowing; i++) {
                 hearts[i].sprite = heartPieces[hearts.Length - 1];

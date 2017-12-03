@@ -3,7 +3,8 @@
 --- !u!78 &1
 TagManager:
   serializedVersion: 2
-  tags: []
+  tags:
+  - Barrel
   layers:
   - Default
   - TransparentFX
@@ -52,4 +53,7 @@ TagManager:
     locked: 0
   - name: Forground
     uniqueID: 3056311949
+    locked: 0
+  - name: In Game UI
+    uniqueID: 1454302661
     locked: 0

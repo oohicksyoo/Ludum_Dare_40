@@ -6,6 +6,7 @@ using System;
 using Project.InputControls;
 using Project.Manager;
 using Project.Turkey;
+using Project.Game;
 
 namespace Project.Terrain {
     public class World : Singleton<World> {
@@ -26,6 +27,12 @@ namespace Project.Terrain {
         [SerializeField]
         private Transform turkeyParent;
 
+        [Header("Plants")]
+        [SerializeField]
+        private GameObject plantPrefab;
+        [SerializeField]
+        private Transform plantParent;
+
         [Header("World Information")]
         [SerializeField]
         private int width = 10;
@@ -34,6 +41,7 @@ namespace Project.Terrain {
 
         private List<Tile> gameTiles;
         private List<TurkeyManager> turkeys;
+        private List<Plant> plants;
         private Rect bounds;
 
 		public void Start () {
@@ -44,6 +52,7 @@ namespace Project.Terrain {
 
             gameTiles = new List<Tile>();
             turkeys = new List<TurkeyManager>();
+            plants = new List<Plant>();
             generateWorld();
             spawnStartTurkeys();
 		}        
@@ -53,7 +62,7 @@ namespace Project.Terrain {
             //Get tile the player is on
             //Change tile to new type (Farm land)
             //Error check if the tile cant be changed (Water)
-            Tile t = getTileAtPosition(GameManager.Instance.Player.position);
+            Tile t = GetTileAtPosition(GameManager.Instance.Player.position);
 
             if(t.GetTileType() == TileType.Grass) {
                 t.SetType(TileType.FarmLand);
@@ -62,11 +71,19 @@ namespace Project.Terrain {
 
         private void onInteractEvent() {
             //TODO: Based on tile we are on show UI events?
+            Tile t = GetTileAtPosition(GameManager.Instance.Player.position);
+            
+            if(t.GetTileType() == TileType.FarmLand && !PlantAtPosition(t.GetPosition())) {
+                GameObject plant = Instantiate(plantPrefab, plantParent);
+                plant.transform.position = t.GetPosition();
+                Plant p = plant.GetComponent<Plant>();
+                plants.Add(p);
+            }
         }
         #endregion
 
         #region Utility
-        private Tile getTileAtPosition(Vector3 Position) {
+        public Tile GetTileAtPosition(Vector3 Position) {
             Tile closest = gameTiles[0];
             float dist = Mathf.Infinity;
 
@@ -86,6 +103,31 @@ namespace Project.Terrain {
                 return true;
             }
             return false;
+        }
+
+        public bool PlantAtPosition(Vector3 Position) {
+            foreach (Plant plant in plants) {
+                if(Position == plant.GetPosition()) {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        public Plant ClosestPlantToMe(Vector3 Position) {
+            Plant closestPlant = null;
+            float cDist = Mathf.Infinity;
+
+            foreach (Plant plant in plants) {
+                float d = Vector3.Distance(Position, plant.GetPosition());
+                if(d < cDist) {
+                    cDist = d;
+                    closestPlant = plant;
+                }
+            }
+
+            return closestPlant;
         }
         #endregion
 
